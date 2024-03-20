@@ -64,6 +64,7 @@ catkin_package(
     roscpp
     rviz
     rviz_visual_tools
+    std_srvs
   DEPENDS
     EIGEN3
 )

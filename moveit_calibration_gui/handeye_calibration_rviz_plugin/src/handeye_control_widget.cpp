@@ -242,6 +242,14 @@ ControlTabWidget::ControlTabWidget(HandEyeCalibrationDisplay* pdisplay, QWidget*
 
   // Set initial status
   calibration_display_->setStatus(rviz::StatusProperty::Ok, "Calibration", "Collect 5 samples to start calibration.");
+  this->take_sample_service = this->nh_.advertiseService("/handeye_calib/take_sample", &ControlTabWidget::take_sample, this);
+}
+
+bool ControlTabWidget::take_sample(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
+  ROS_INFO_STREAM("take_sample");
+  this->takeSampleBtnClicked(true);
+  res.success = true;
+  return true;
 }
 
 void ControlTabWidget::loadWidget(const rviz::Config& config)

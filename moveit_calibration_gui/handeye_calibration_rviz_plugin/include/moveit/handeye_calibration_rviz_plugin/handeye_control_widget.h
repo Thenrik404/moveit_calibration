@@ -64,7 +64,7 @@
 #include <moveit/handeye_calibration_solver/handeye_solver_base.h>
 #include <moveit/background_processing/background_processing.h>
 #include <moveit/handeye_calibration_rviz_plugin/handeye_calibration_display.h>
-
+#include <std_srvs/Trigger.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
@@ -257,6 +257,8 @@ private:
   // **************************************************************
 
   ros::NodeHandle nh_;
+  ros::ServiceServer take_sample_service;
+  bool take_sample(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
   // ros::CallbackQueue callback_queue_;
   // ros::AsyncSpinner spinner_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -267,6 +269,7 @@ private:
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   moveit::planning_interface::MoveGroupInterfacePtr move_group_;
   moveit::planning_interface::MoveGroupInterface::PlanPtr current_plan_;
+
 };
 
 }  // namespace moveit_rviz_plugin
