@@ -242,7 +242,8 @@ ControlTabWidget::ControlTabWidget(HandEyeCalibrationDisplay* pdisplay, QWidget*
 
   // Set initial status
   calibration_display_->setStatus(rviz::StatusProperty::Ok, "Calibration", "Collect 5 samples to start calibration.");
-  this->take_sample_service = this->nh_.advertiseService("/handeye_calib/take_sample", &ControlTabWidget::take_sample, this);
+  this->take_sample_service = this->nh_.advertiseService("/handeye_calibration/take_sample", &ControlTabWidget::take_sample, this);
+  this->savecampose_service = this->nh_.advertiseService("/handeye_calibration/save_camera_pose", &ControlTabWidget::save_cam_pose, this);
 }
 
 bool ControlTabWidget::take_sample(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
@@ -631,6 +632,8 @@ void ControlTabWidget::saveCameraPoseBtnClicked(bool clicked)
     return;
   }
 
+  std::cout<<file_name.toStdString()<<std::endl;
+
   QTextStream out(&file);
 
   Eigen::Vector3d t = camera_robot_pose_.translation();
@@ -651,6 +654,68 @@ void ControlTabWidget::saveCameraPoseBtnClicked(bool clicked)
   ss << "</launch>" << std::endl;
   out << ss.str().c_str();
 }
+
+bool ControlTabWidget::save_cam_pose(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
+{
+  std::string& from_frame = frame_names_[from_frame_tag_];
+  std::string& to_frame = frame_names_["sensor"];
+
+
+
+  if (from_frame.empty() || to_frame.empty())
+  {
+    QMessageBox::warning(this, tr("Empty Frame Name"),
+                         tr("Make sure you have selected the correct frames in the Context tab."));
+    res.success = false;
+    return res.success;
+  }
+  // TODO: add filename in srv_call
+  QString file_name = QString("/home/docker/catkin_ws/src/handeye_toolbox/handeye_tools/results/test1.launch");
+  std::cout<<file_name.toStdString()<<std::endl;
+
+  if (file_name.isEmpty()){
+    res.success = false;
+    return false;
+  }
+
+  if (!file_name.endsWith(".launch")){
+    file_name += ".launch";
+  }
+
+  QFile file(file_name);
+  if (!file.open(QIODevice::WriteOnly))
+  {
+    QMessageBox::warning(this, tr("Unable to open file"), file.errorString());
+    res.success = false;
+    return res.success;
+  }
+
+  QTextStream out(&file);
+
+  Eigen::Vector3d t = camera_robot_pose_.translation();
+  Eigen::Quaterniond r_quat(camera_robot_pose_.rotation());
+  Eigen::Vector3d r_euler = camera_robot_pose_.rotation().eulerAngles(0, 1, 2);
+  std::stringstream ss;
+  ss << "<launch>" << std::endl;
+  ss << "  <!-- The rpy in the comment uses the extrinsic XYZ convention, which is the same as is used in a URDF. See"
+     << std::endl;
+  ss << "       http://wiki.ros.org/geometry2/RotationMethods and https://en.wikipedia.org/wiki/Euler_angles for more "
+        "info. -->"
+     << std::endl;
+  ss << "  <!-- xyz=\"" << t[0] << " " << t[1] << " " << t[2] << "\" rpy=\"" << r_euler[0] << " " << r_euler[1] << " "
+     << r_euler[2] << "\" -->" << std::endl;
+  ss << "  <node pkg=\"tf2_ros\" type=\"static_transform_publisher\" name=\"camera_link_broadcaster\"" << std::endl;
+  ss << "      args=\"" << t[0] << " " << t[1] << " " << t[2] << "   " << r_quat.x() << " " << r_quat.y() << " "
+     << r_quat.z() << " " << r_quat.w() << " " << from_frame << " " << to_frame << "\" />" << std::endl;
+  ss << "</launch>" << std::endl;
+  out << ss.str().c_str();
+
+  res.message = "Saved HandEyeCalibration as "+file_name.toStdString();
+  res.success = true;
+
+  return res.success;
+}
+
 
 void ControlTabWidget::planningGroupNameChanged(const QString& text)
 {

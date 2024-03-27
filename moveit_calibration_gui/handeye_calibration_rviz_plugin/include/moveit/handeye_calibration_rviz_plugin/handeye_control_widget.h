@@ -258,7 +258,9 @@ private:
 
   ros::NodeHandle nh_;
   ros::ServiceServer take_sample_service;
+  ros::ServiceServer savecampose_service;
   bool take_sample(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+  bool save_cam_pose(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
   // ros::CallbackQueue callback_queue_;
   // ros::AsyncSpinner spinner_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
