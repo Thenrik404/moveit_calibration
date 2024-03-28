@@ -670,7 +670,7 @@ bool ControlTabWidget::save_cam_pose(std_srvs::TriggerRequest &req, std_srvs::Tr
     return res.success;
   }
   // TODO: add filename in srv_call
-  QString file_name = QString("/home/docker/catkin_ws/src/handeye_toolbox/handeye_tools/results/test1.launch");
+  QString file_name = QString("/home/docker/catkin_ws/src/handeye_toolbox/handeye_tools/results/cam_pose.launch");
   std::cout<<file_name.toStdString()<<std::endl;
 
   if (file_name.isEmpty()){
